@@ -1,0 +1,32 @@
+services:
+  minecraft:
+    build: .
+    container_name: minecraft-server
+    ports:
+      - "25565:25565"
+    volumes:
+      - minecraft-world:/opt/minecraft-server/world
+      # Mount JSON override files (optional):
+      # - ./config:/data/config
+    environment:
+      JAVA_XMX: "4G"
+      JAVA_XMS: "4G"
+      # JAVA_EXTRA_ARGS: "-XX:+UseG1GC"
+      MC_MOTD: "A Minecraft Server"
+      MC_DIFFICULTY: "normal"
+      MC_MAX_PLAYERS: "20"
+      MC_VIEW_DISTANCE: "10"
+      # MC_RCON__PASSWORD: "changeme"
+      # MC_ENABLE_RCON: "true"
+      # MC_JSON_WHITELIST: '[{"uuid":"...","name":"Player"}]'
+      # MC_JSON_OPS: '[{"uuid":"...","name":"Player","level":4,"bypassesPlayerLimit":false}]'
+    deploy:
+      resources:
+        limits:
+          memory: 6G
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+
+volumes:
+  minecraft-world:
