@@ -73,8 +73,12 @@ done
 echo "[entrypoint] JSON config files configured"
 
 # ---------------------------------------------------------------------------
-# 3. Launch the Minecraft server
+# 3. Launch the Minecraft server (or execute a custom command if provided)
 # ---------------------------------------------------------------------------
+if [[ $# -gt 0 ]]; then
+  exec "$@"
+fi
+
 JAVA_XMX="${JAVA_XMX:-4G}"
 JAVA_XMS="${JAVA_XMS:-4G}"
 
