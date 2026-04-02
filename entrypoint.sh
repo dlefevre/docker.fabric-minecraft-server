@@ -83,4 +83,5 @@ JAVA_XMX="${JAVA_XMX:-4G}"
 JAVA_XMS="${JAVA_XMS:-4G}"
 
 echo "[entrypoint] Starting Minecraft server (Xmx=${JAVA_XMX}, Xms=${JAVA_XMS})"
+cd "${SERVER_DIR}"
 exec java -Xmx"${JAVA_XMX}" -Xms"${JAVA_XMS}" ${JAVA_EXTRA_ARGS:-} -jar server.jar nogui

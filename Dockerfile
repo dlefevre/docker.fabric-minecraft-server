@@ -39,6 +39,9 @@ RUN microdnf install -y jq && microdnf clean all && \
 COPY --from=builder --chown=minecraft:minecraft ${MINECRAFT_DIR} ${MINECRAFT_DIR}
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 
+ENV HOME=${MINECRAFT_DIR}
+WORKDIR ${MINECRAFT_DIR}
+
 VOLUME ${MINECRAFT_DIR}/world
 EXPOSE 25565
 
