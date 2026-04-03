@@ -23,7 +23,8 @@ RUN while read -r url filename; do \
 
 RUN printf "eula=true\n" > eula.txt
 
-COPY server.properties server.properties
+COPY server.properties.default server.properties.default
+COPY server.properties.default server.properties
 
 
 FROM eclipse-temurin:25-jre-ubi10-minimal
@@ -36,7 +37,14 @@ RUN microdnf install -y jq && microdnf clean all && \
     for DIR in world versions libraries logs config; do \
       mkdir -p ${MINECRAFT_DIR}/$DIR && \
       chown minecraft:minecraft ${MINECRAFT_DIR}/$DIR; \
+    done && \
+    mkdir -p /data/config && chown minecraft:minecraft /data/config && \
+    for FILE in banned-ips.json banned-players.json ops.json whitelist.json; do \
+      echo -n "[]" > /data/config/$FILE && \
+      chown minecraft:minecraft /data/config/$FILE && \
+      ln -s /data/config/$FILE ${MINECRAFT_DIR}/$FILE; \
     done
+    
 
 COPY --from=builder --chown=minecraft:minecraft ${MINECRAFT_DIR} ${MINECRAFT_DIR}
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
@@ -45,6 +53,7 @@ ENV HOME=${MINECRAFT_DIR}
 WORKDIR ${MINECRAFT_DIR}
 
 VOLUME ${MINECRAFT_DIR}/world
+VOLUME /data/config
 EXPOSE 25565
 
 USER minecraft
