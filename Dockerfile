@@ -23,7 +23,7 @@ RUN while read -r url filename; do \
 
 RUN printf "eula=true\n" > eula.txt
 
-COPY server.properties.default server.properties.default
+COPY server.properties server.properties
 
 
 FROM eclipse-temurin:25-jre-ubi10-minimal
@@ -33,8 +33,10 @@ ARG MINECRAFT_DIR=/opt/minecraft-server
 RUN microdnf install -y jq && microdnf clean all && \
     groupadd -r minecraft && \
     useradd -r -g minecraft -d ${MINECRAFT_DIR} -s /sbin/nologin -u 1000 minecraft && \
-    mkdir -p ${MINECRAFT_DIR}/world /data/config && \
-    chown minecraft:minecraft ${MINECRAFT_DIR} /data/config
+    for DIR in world versions libraries logs config; do \
+      mkdir -p ${MINECRAFT_DIR}/$DIR && \
+      chown minecraft:minecraft ${MINECRAFT_DIR}/$DIR; \
+    done
 
 COPY --from=builder --chown=minecraft:minecraft ${MINECRAFT_DIR} ${MINECRAFT_DIR}
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
