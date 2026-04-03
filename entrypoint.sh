@@ -38,7 +38,7 @@ done < <(env)
 echo "[entrypoint] server.properties configured"
 
 # ---------------------------------------------------------------------------
-# 2. JSON config files — mounted overrides + MC_JSON_* env var injection
+# 2. JSON config files — create if missing, MC_JSON_* idempotent injection
 # ---------------------------------------------------------------------------
 declare -A JSON_FILES=(
   [whitelist]="MC_JSON_WHITELIST"
@@ -48,25 +48,33 @@ declare -A JSON_FILES=(
 )
 
 for json_name in "${!JSON_FILES[@]}"; do
-  target="${SERVER_DIR}/${json_name}.json"
+  file="${CONFIG_DIR}/${json_name}.json"
   env_key="${JSON_FILES[${json_name}]}"
-  override_file="${CONFIG_DIR}/${json_name}.json"
 
-  # Start with empty array
-  printf '[]' > "${target}"
-
-  # If a mounted override file exists, use it as the base
-  if [ -f "${override_file}" ]; then
-    cp "${override_file}" "${target}"
-    echo "[entrypoint] ${json_name}.json loaded from mounted file"
+  # Create the file only if it doesn't already exist; never overwrite an existing file
+  if [ ! -f "${file}" ]; then
+    printf '[]' > "${file}"
+    echo "[entrypoint] ${json_name}.json initialized as empty array"
+  else
+    echo "[entrypoint] ${json_name}.json already exists, leaving as-is"
   fi
 
-  # If the corresponding env var is set, merge its elements into the array
+  # If the corresponding env var is set, add only entries not already present
+  # Uniqueness is determined by .uuid for player files, .ip for banned-ips
   env_value="${!env_key:-}"
   if [ -n "${env_value}" ]; then
-    jq -s '.[0] + .[1]' "${target}" <(printf '%s' "${env_value}") > "${target}.tmp"
-    mv "${target}.tmp" "${target}"
-    echo "[entrypoint] ${json_name}.json merged from env var ${env_key}"
+    jq -s '
+      .[0] as $existing |
+      .[1] as $new |
+      $existing + ($new | map(
+        . as $e |
+        select($existing | map(
+          (.uuid // .ip // tostring) == ($e.uuid // $e.ip // $e | tostring)
+        ) | any | not)
+      ))
+    ' "${file}" <(printf '%s' "${env_value}") > "${file}.tmp"
+    mv "${file}.tmp" "${file}"
+    echo "[entrypoint] ${json_name}.json: missing entries injected from env var ${env_key}"
   fi
 done
 

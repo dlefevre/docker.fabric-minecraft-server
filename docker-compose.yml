@@ -6,8 +6,7 @@ services:
       - "25565:25565"
     volumes:
       - minecraft-world:/opt/minecraft-server/world
-      # Mount JSON override files (optional):
-      # - ./config:/data/config
+      - config:/data/config
     environment:
       JAVA_XMX: "4G"
       JAVA_XMS: "4G"
@@ -30,3 +29,4 @@ services:
 
 volumes:
   minecraft-world:
+  config:
