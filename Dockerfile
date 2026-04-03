@@ -43,7 +43,10 @@ RUN microdnf install -y jq && microdnf clean all && \
       echo -n "[]" > /data/config/$FILE && \
       chown minecraft:minecraft /data/config/$FILE && \
       ln -s /data/config/$FILE ${MINECRAFT_DIR}/$FILE; \
-    done
+    done && \
+    touch /data/config/.fabric && \
+    chown minecraft:minecraft /data/config/.fabric && \
+    ln -s /data/config/.fabric ${MINECRAFT_DIR}/.fabric
     
 
 COPY --from=builder --chown=minecraft:minecraft ${MINECRAFT_DIR} ${MINECRAFT_DIR}
