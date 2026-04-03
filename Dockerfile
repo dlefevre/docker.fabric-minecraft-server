@@ -34,7 +34,7 @@ ARG MINECRAFT_DIR=/opt/minecraft-server
 RUN microdnf install -y jq && microdnf clean all && \
     groupadd -r minecraft && \
     useradd -r -g minecraft -d ${MINECRAFT_DIR} -s /sbin/nologin -u 1000 minecraft && \
-    for DIR in world versions libraries logs config; do \
+    for DIR in world versions libraries logs config .fabric; do \
       mkdir -p ${MINECRAFT_DIR}/$DIR && \
       chown minecraft:minecraft ${MINECRAFT_DIR}/$DIR; \
     done && \
@@ -43,10 +43,7 @@ RUN microdnf install -y jq && microdnf clean all && \
       echo -n "[]" > /data/config/$FILE && \
       chown minecraft:minecraft /data/config/$FILE && \
       ln -s /data/config/$FILE ${MINECRAFT_DIR}/$FILE; \
-    done && \
-    touch /data/config/.fabric && \
-    chown minecraft:minecraft /data/config/.fabric && \
-    ln -s /data/config/.fabric ${MINECRAFT_DIR}/.fabric
+    done
     
 
 COPY --from=builder --chown=minecraft:minecraft ${MINECRAFT_DIR} ${MINECRAFT_DIR}
